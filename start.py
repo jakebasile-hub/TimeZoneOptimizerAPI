@@ -13,8 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 os.environ['PYTHONPATH'] = 'src'
 
 if __name__ == "__main__":
-    import uvicorn
-    from src.main import app
+    from src.flask_app import app
     
     port = int(os.environ.get('PORT', 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=False)
