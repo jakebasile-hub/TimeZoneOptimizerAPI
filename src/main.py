@@ -3,9 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import time
 import os
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
-from models import OptimizeRequest, OptimizeResponse, HealthResponse, ErrorResponse
 from timezone_optimizer import TimezoneOptimizer
 from auth import auth_manager
 
@@ -51,24 +50,20 @@ def get_api_key(x_api_key: Optional[str] = Header(None)) -> str:
     return x_api_key
 
 
-@app.get("/health", response_model=HealthResponse)
+@app.get("/health")
 async def health_check():
     """Health check endpoint"""
     uptime = time.time() - start_time
-    return HealthResponse(status="ok", uptime=uptime)
+    return {"status": "ok", "uptime": uptime}
 
 
-@app.post("/optimize", response_model=OptimizeResponse)
+@app.post("/optimize")
 async def optimize_meeting_time(
-    request: OptimizeRequest,
+    request: Dict[str, Any],
     api_key: str = Depends(get_api_key)
 ):
     """
     Find optimal meeting time for participants across timezones.
-    
-    - **participants**: List of meeting participants with names and locations
-    - **duration_minutes**: Meeting duration (15-480 minutes)
-    - **num_alternatives**: Number of alternative times to return (1-10)
     """
     try:
         # Check rate limit
@@ -81,20 +76,31 @@ async def optimize_meeting_time(
         # Log usage
         auth_manager.log_usage(api_key, "/optimize")
         
+        # Validate request
+        participants = request.get("participants", [])
+        duration_minutes = request.get("duration_minutes", 60)
+        num_alternatives = request.get("num_alternatives", 3)
+        
+        if not participants or len(participants) < 2:
+            raise HTTPException(
+                status_code=400,
+                detail="At least 2 participants are required"
+            )
+        
         # Convert request to optimizer format
-        participants = [
-            {"name": p.name, "location": p.location}
-            for p in request.participants
+        participant_list = [
+            {"name": p["name"], "location": p["location"]}
+            for p in participants
         ]
         
         # Find optimal meeting time
         result = optimizer.find_optimal_meeting_time(
-            participants=participants,
-            duration_minutes=request.duration_minutes,
-            num_alternatives=request.num_alternatives
+            participants=participant_list,
+            duration_minutes=duration_minutes,
+            num_alternatives=num_alternatives
         )
         
-        return OptimizeResponse(**result)
+        return result
         
     except Exception as e:
         raise HTTPException(
@@ -106,7 +112,6 @@ async def optimize_meeting_time(
 @app.get("/usage")
 async def get_usage_stats(api_key: str = Depends(get_api_key)):
     """Get usage statistics for the API key"""
-    # This would typically return usage stats
     return {"message": "Usage stats endpoint - implement as needed"}
 
 
@@ -128,7 +133,7 @@ async def http_exception_handler(request, exc):
     """Custom exception handler for consistent error responses"""
     return JSONResponse(
         status_code=exc.status_code,
-        content=ErrorResponse(error=exc.detail).dict()
+        content={"error": exc.detail}
     )
 
 
