@@ -1,1 +1,1 @@
-web: python src/flask_app.py
+web: python run_flask.py

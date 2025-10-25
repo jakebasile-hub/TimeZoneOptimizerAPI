@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+"""
+Flask startup script for TimeZone Optimizer API
+"""
+
+import os
+import sys
+
+# Add src directory to Python path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+
+# Set environment variables
+os.environ['PYTHONPATH'] = 'src'
+
+if __name__ == "__main__":
+    from src.flask_app import app
+    
+    port = int(os.environ.get('PORT', 8000))
+    print(f"Starting Flask app on port {port}")
+    app.run(host="0.0.0.0", port=port, debug=False)
