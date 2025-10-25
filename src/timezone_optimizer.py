@@ -1,5 +1,4 @@
 import pytz
-from timezonefinder import TimezoneFinder
 from datetime import datetime, timedelta
 from typing import List, Tuple, Dict
 import math
@@ -7,26 +6,104 @@ import math
 
 class TimezoneOptimizer:
     def __init__(self):
-        self.tf = TimezoneFinder()
         self.working_hours = (9, 17)  # 9 AM to 5 PM
         self.sleep_hours = (22, 7)  # 10 PM to 7 AM (next day)
     
     def get_timezone_from_location(self, location: str) -> str:
         """Convert location string to IANA timezone"""
-        # Simple mapping for common locations
+        # Comprehensive mapping for common locations
         location_mapping = {
+            # North America
             "new york": "America/New_York",
-            "london": "Europe/London", 
-            "tokyo": "Asia/Tokyo",
-            "paris": "Europe/Paris",
-            "sydney": "Australia/Sydney",
             "los angeles": "America/Los_Angeles",
             "chicago": "America/Chicago",
             "denver": "America/Denver",
             "toronto": "America/Toronto",
-            "mumbai": "Asia/Kolkata",
+            "vancouver": "America/Vancouver",
+            "miami": "America/New_York",
+            "seattle": "America/Los_Angeles",
+            "boston": "America/New_York",
+            "san francisco": "America/Los_Angeles",
+            "usa": "America/New_York",
+            "united states": "America/New_York",
+            "canada": "America/Toronto",
+            
+            # Europe
+            "london": "Europe/London",
+            "paris": "Europe/Paris",
+            "berlin": "Europe/Berlin",
+            "rome": "Europe/Rome",
+            "madrid": "Europe/Madrid",
+            "amsterdam": "Europe/Amsterdam",
+            "zurich": "Europe/Zurich",
+            "vienna": "Europe/Vienna",
+            "moscow": "Europe/Moscow",
+            "uk": "Europe/London",
+            "united kingdom": "Europe/London",
+            "france": "Europe/Paris",
+            "germany": "Europe/Berlin",
+            "italy": "Europe/Rome",
+            "spain": "Europe/Madrid",
+            "netherlands": "Europe/Amsterdam",
+            "switzerland": "Europe/Zurich",
+            "austria": "Europe/Vienna",
+            "russia": "Europe/Moscow",
+            
+            # Asia
+            "tokyo": "Asia/Tokyo",
             "beijing": "Asia/Shanghai",
-            "moscow": "Europe/Moscow"
+            "shanghai": "Asia/Shanghai",
+            "hong kong": "Asia/Hong_Kong",
+            "singapore": "Asia/Singapore",
+            "mumbai": "Asia/Kolkata",
+            "delhi": "Asia/Kolkata",
+            "bangalore": "Asia/Kolkata",
+            "seoul": "Asia/Seoul",
+            "taipei": "Asia/Taipei",
+            "bangkok": "Asia/Bangkok",
+            "jakarta": "Asia/Jakarta",
+            "manila": "Asia/Manila",
+            "japan": "Asia/Tokyo",
+            "china": "Asia/Shanghai",
+            "india": "Asia/Kolkata",
+            "south korea": "Asia/Seoul",
+            "korea": "Asia/Seoul",
+            "taiwan": "Asia/Taipei",
+            "thailand": "Asia/Bangkok",
+            "indonesia": "Asia/Jakarta",
+            "philippines": "Asia/Manila",
+            
+            # Australia/Oceania
+            "sydney": "Australia/Sydney",
+            "melbourne": "Australia/Melbourne",
+            "perth": "Australia/Perth",
+            "brisbane": "Australia/Brisbane",
+            "auckland": "Pacific/Auckland",
+            "australia": "Australia/Sydney",
+            "new zealand": "Pacific/Auckland",
+            
+            # South America
+            "sao paulo": "America/Sao_Paulo",
+            "rio de janeiro": "America/Sao_Paulo",
+            "buenos aires": "America/Argentina/Buenos_Aires",
+            "lima": "America/Lima",
+            "bogota": "America/Bogota",
+            "mexico city": "America/Mexico_City",
+            "brazil": "America/Sao_Paulo",
+            "argentina": "America/Argentina/Buenos_Aires",
+            "peru": "America/Lima",
+            "colombia": "America/Bogota",
+            "mexico": "America/Mexico_City",
+            
+            # Africa
+            "cairo": "Africa/Cairo",
+            "johannesburg": "Africa/Johannesburg",
+            "lagos": "Africa/Lagos",
+            "nairobi": "Africa/Nairobi",
+            "egypt": "Africa/Cairo",
+            "south africa": "Africa/Johannesburg",
+            "nigeria": "Africa/Lagos",
+            "kenya": "Africa/Nairobi"
         }
         
         location_lower = location.lower()
