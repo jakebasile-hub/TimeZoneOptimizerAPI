@@ -1,0 +1,328 @@
+openapi: 3.0.3
+info:
+  title: TimeZone Optimizer API
+  description: |
+    Find optimal meeting times across timezones for global teams, gaming sessions, and video calls. 
+    Eliminates manual timezone calculations with smart scheduling that minimizes sleep-hour conflicts.
+    
+    Perfect for:
+    - Business meetings across timezones
+    - Online gaming sessions
+    - Video conferences with global participants
+    - Family reunions across countries
+    - Phone calls with friends overseas
+    
+    Supports 100+ locations worldwide including major cities in North America, Europe, Asia, Australia, South America, and Africa.
+  version: 1.0.0
+  contact:
+    name: TimeZone Optimizer API
+    url: https://your-render-url.onrender.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: https://your-render-url.onrender.com
+    description: Production server
+  - url: http://localhost:8000
+    description: Development server
+tags:
+  - name: optimization
+    description: Timezone optimization endpoints
+  - name: health
+    description: Health check endpoints
+  - name: auth
+    description: Authentication endpoints
+paths:
+  /optimize:
+    post:
+      tags:
+        - optimization
+      summary: Find optimal meeting time
+      description: |
+        Find the optimal meeting time for participants across different timezones.
+        Returns the best UTC time with local times for each participant, plus alternative options.
+      operationId: optimizeMeetingTime
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptimizeRequest'
+            examples:
+              basic_example:
+                summary: Basic meeting optimization
+                value:
+                  participants:
+                    - name: "Alice"
+                      location: "New York, USA"
+                    - name: "Bob"
+                      location: "London, UK"
+                  duration_minutes: 60
+                  num_alternatives: 3
+              gaming_session:
+                summary: Gaming session optimization
+                value:
+                  participants:
+                    - name: "Player1"
+                      location: "Los Angeles, USA"
+                    - name: "Player2"
+                      location: "Tokyo, Japan"
+                    - name: "Player3"
+                      location: "Sydney, Australia"
+                  duration_minutes: 120
+                  num_alternatives: 2
+      responses:
+        '200':
+          description: Successful optimization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptimizeResponse'
+              examples:
+                success_example:
+                  summary: Successful optimization result
+                  value:
+                    best_meeting_time_utc: "2025-01-25T14:00:00Z"
+                    local_times:
+                      - name: "Alice"
+                        local_time: "2025-01-25T10:00:00-04:00"
+                      - name: "Bob"
+                        local_time: "2025-01-25T15:00:00+01:00"
+                    alternatives:
+                      - utc_time: "2025-01-25T13:00:00Z"
+                        fairness_score: 0.88
+                      - utc_time: "2025-01-25T15:00:00Z"
+                        fairness_score: 0.85
+        '400':
+          description: Bad request - invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /health:
+    get:
+      tags:
+        - health
+      summary: Health check
+      description: Check the health status of the API
+      operationId: healthCheck
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy_example:
+                  summary: Healthy API response
+                  value:
+                    status: "ok"
+                    uptime: 123.45
+  /create-key:
+    post:
+      tags:
+        - auth
+      summary: Create API key
+      description: Create a new API key for accessing the API
+      operationId: createApiKey
+      parameters:
+        - name: user_id
+          in: query
+          description: User identifier for the API key
+          required: false
+          schema:
+            type: string
+            default: "default_user"
+      responses:
+        '200':
+          description: API key created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateKeyResponse'
+              examples:
+                key_created:
+                  summary: API key created
+                  value:
+                    api_key: "tz_opt_abc123def456"
+                    message: "API key created successfully"
+        '500':
+          description: Error creating API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /usage:
+    get:
+      tags:
+        - auth
+      summary: Get usage statistics
+      description: Get usage statistics for the API key
+      operationId: getUsageStats
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Usage statistics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageResponse'
+        '401':
+          description: Unauthorized - invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+  schemas:
+    Participant:
+      type: object
+      required:
+        - name
+        - location
+      properties:
+        name:
+          type: string
+          description: Name of the participant
+          example: "Alice"
+        location:
+          type: string
+          description: Location string (e.g., 'New York, USA', 'Tokyo, Japan')
+          example: "New York, USA"
+    OptimizeRequest:
+      type: object
+      required:
+        - participants
+      properties:
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'
+          minItems: 2
+          description: List of meeting participants
+        duration_minutes:
+          type: integer
+          minimum: 15
+          maximum: 480
+          default: 60
+          description: Meeting duration in minutes
+        num_alternatives:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 3
+          description: Number of alternative times to return
+    LocalTime:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Participant name
+          example: "Alice"
+        local_time:
+          type: string
+          format: date-time
+          description: Local time in ISO format with timezone
+          example: "2025-01-25T10:00:00-04:00"
+    Alternative:
+      type: object
+      properties:
+        utc_time:
+          type: string
+          format: date-time
+          description: UTC time in ISO format
+          example: "2025-01-25T13:00:00Z"
+        fairness_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Fairness score (0-1, higher is better)
+          example: 0.88
+    OptimizeResponse:
+      type: object
+      properties:
+        best_meeting_time_utc:
+          type: string
+          format: date-time
+          description: Best meeting time in UTC
+          example: "2025-01-25T14:00:00Z"
+        local_times:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalTime'
+          description: Local times for each participant
+        alternatives:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alternative'
+          description: Alternative meeting times
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: API status
+          example: "ok"
+        uptime:
+          type: number
+          format: float
+          description: API uptime in seconds
+          example: 123.45
+    CreateKeyResponse:
+      type: object
+      properties:
+        api_key:
+          type: string
+          description: Generated API key
+          example: "tz_opt_abc123def456"
+        message:
+          type: string
+          description: Success message
+          example: "API key created successfully"
+    UsageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Usage information
+          example: "Usage stats endpoint - implement as needed"
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "API key required. Include 'X-API-Key' header."
+        detail:
+          type: string
+          description: Additional error details
+          example: "Invalid API key"
