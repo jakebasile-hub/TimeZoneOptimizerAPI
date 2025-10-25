@@ -16,12 +16,12 @@ info:
   version: 1.0.0
   contact:
     name: TimeZone Optimizer API
-    url: https://your-render-url.onrender.com
+    url: https://timezoneoptimizerapi.onrender.com
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
 servers:
-  - url: https://your-render-url.onrender.com
+  - url: https://timezoneoptimizerapi.onrender.com
     description: Production server
   - url: http://localhost:8000
     description: Development server
